@@ -11,4 +11,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    port: 5173,
+    host: '0.0.0.0', // so it’s accessible from other machines
+    proxy: {
+      '/api': {
+        target: 'http://192.168.52.32:5037',
+        changeOrigin: true,
+        secure: false,
+        cookieDomainRewrite: "192.168.52.32"
+      }
+    }
+  }
 })

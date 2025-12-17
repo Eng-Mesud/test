@@ -3,10 +3,10 @@ import { Toaster } from "./components/ui/sonner";
 import LoginPage from "./pages/LoginPage";
 import DashboardLayout from "./layout/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import UsersPage from "./pages/UsersPage";
-import RoleRoute from "./auth/RoleRoute";
 import ForbiddenPage from "./pages/ForbiddenPage";
+import UsersPage from "./features/users/UsersPage";
+// import VotersPage from "./features/voters/VotersPage";
+import { AuthGuard } from "./auth/Guard";
 
 export function App() {
     return (
@@ -16,18 +16,26 @@ export function App() {
                 <Route path="/403" element={<ForbiddenPage />} />
 
                 <Route path="/dashboard" element={
-                    <ProtectedRoute>
+                    <AuthGuard>
                         <DashboardLayout />
-                    </ProtectedRoute>
+                    </AuthGuard>
                 }>
                     <Route index element={<DashboardPage />} />
                     <Route path="users" element={
-                        <RoleRoute roles={["Admin"]}>
+                        <AuthGuard allowedRoles={["admin"]}>
                             <UsersPage />
-                        </RoleRoute>
+                        </AuthGuard>
                     } />
+                    //add voters router
+                    {/* <Route path="voters" element={
+                        <AuthGuard allowedRoles={["Admin"]}>
+                            <VotersPage />
+                        </AuthGuard>
+                    } /> */}
+
                     {/* Add more routes here later */}
                 </Route>
+
 
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

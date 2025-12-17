@@ -1,68 +1,87 @@
 // src/api/apiClient.ts
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { toast } from "sonner";
+import type { ApiErrorResponse } from "@/schemas";
+
+const api = axios.create({
+  baseURL: "/api",
+  withCredentials: true,
+});
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
-const BaseUrl = "http://192.168.187.32:5037/api";
-const api = axios.create({
-    baseURL: BaseUrl,
-    withCredentials: true, // enable cookies
-});
 
-function processQueue(error: any, token: string | null = null) {
-    failedQueue.forEach((p) => {
-        error ? p.reject(error) : p.resolve(token);
-    });
-    failedQueue = [];
-}
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    error ? prom.reject(error) : prom.resolve(token);
+  });
+  failedQueue = [];
+};
 
 api.interceptors.response.use(
-    (res: any) => res,
-    async (error: AxiosError) => {
-        const original = error.config as any;
+  (response) => response,
+  async (error: AxiosError<ApiErrorResponse>) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const errorData = error.response?.data;
 
-        // Skip if the request is for the refresh token itself or login, to avoid circular loops
-        if (original.url?.includes("/auth/refresh") || original.url?.includes("/auth/login")) {
-            return Promise.reject(error);
+    // 1. Handle 401 Unauthorized
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (originalRequest.url?.includes("/auth/refresh") || originalRequest.url?.includes("/auth/login")) {
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      isRefreshing = true;
+
+      try {
+        const refreshRes = await api.post("/auth/refresh");
+        const { accessToken } = refreshRes.data;
+
+        api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+        processQueue(null, accessToken);
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        
+        // --- STATE SYNC SOLUTION ---
+        delete api.defaults.headers.common["Authorization"];
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("auth-logout"));
         }
+        // ---------------------------
 
-        if (error.response?.status === 401 && !original._retry) {
-            original._retry = true;
-
-            if (isRefreshing) {
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                })
-                    .then((token) => {
-                        original.headers["Authorization"] = `Bearer ${token}`;
-                        return api(original);
-                    })
-                    .catch((err) => Promise.reject(err));
-            }
-
-            isRefreshing = true;
-            try {
-                const refreshRes = await api.post("/auth/refresh");
-
-                const newAccessToken = refreshRes.data.accessToken;
-                api.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
-
-                processQueue(null, newAccessToken);
-                return api(original);
-            } catch (err) {
-                processQueue(err, null);
-                // If refresh fails, we should probably clear the sticky token header too
-                delete api.defaults.headers.common["Authorization"];
-                return Promise.reject(err);
-            } finally {
-                isRefreshing = false;
-            }
-        }
-
-        return Promise.reject(
-            error.response?.data ?? { message: "Unknown error" }
-        );
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
+
+    // 2. Handle FluentValidation Errors (Catch in components)
+    if (error.response?.status === 400 && errorData?.errorCode === "VALIDATION_ERROR") {
+      return Promise.reject(errorData);
+    }
+
+    // 3. Global Toast for other errors
+    if (error.response?.status !== 401) {
+      toast.error(errorData?.message || "An unexpected error occurred");
+    }
+
+    return Promise.reject(errorData || { message: "Unknown error" });
+  }
 );
 
 export default api;

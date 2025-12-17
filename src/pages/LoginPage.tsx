@@ -29,7 +29,9 @@ export default function LoginPage() {
             toast.promise(loginPromise, {
                 loading: "Logging in...",
                 success: "Logged in successfully!",
-                error: (err) => err?.message || "Invalid credentials",
+                error: (err: any) => {
+                    return err?.message || "Invalid credentials"
+                },
             })
             await loginPromise
             navigate("/dashboard")
