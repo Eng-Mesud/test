@@ -1,35 +1,32 @@
+//user-form.tsx
 "use client"
 
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Controller, useForm } from "react-hook-form"
-import { userSchema, type UserFormValues } from "@/schemas"
+import { useForm } from "react-hook-form"
 
 import { Button } from "@/components/ui/button"
-import {
-    Field,
-    FieldDescription,
-    FieldError,
-    FieldGroup,
-    FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { FieldGroup } from "@/components/ui/field"
+import { FormInput } from "@/components/shared/form/form-input"
+import { FormSelect } from "@/components/shared/form/form-select"
+import { FormPassword } from "@/components/shared/form/form-password"
 import { Loader2 } from "lucide-react"
+import type { UserFormValues } from "@/schemas/userSchema"
+import { userSchema } from "@/schemas/userSchema"
 
 interface UserFormProps {
     initialData?: any
     onSubmit: (data: UserFormValues) => void
     loading: boolean
+    onCancel: () => void
 }
 
-export function UserForm({ initialData, onSubmit, loading }: UserFormProps) {
+const ROLE_OPTIONS = [
+    { label: "Administrator", value: "admin" },
+    { label: "Standard User", value: "user" },
+]
+
+export function UserForm({ initialData, onSubmit, loading, onCancel }: UserFormProps) {
     const form = useForm<UserFormValues>({
         resolver: zodResolver(userSchema),
         defaultValues: {
@@ -39,113 +36,51 @@ export function UserForm({ initialData, onSubmit, loading }: UserFormProps) {
         },
     })
 
-    // Sync form when initialData (edit mode) changes
     React.useEffect(() => {
         if (initialData) {
             form.reset({
-                username: initialData.username,
-                role: initialData.role,
+                username: initialData.username || "",
+                role: initialData.role || "user",
                 password: "",
             })
-        } else {
-            form.reset({ username: "", role: "user", password: "" })
         }
     }, [initialData, form])
 
     return (
-        <form id="user-form" onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FieldGroup>
-                {/* Username Field */}
-                <Controller
+                <FormInput
+                    control={form.control}
                     name="username"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="username">Username</FieldLabel>
-                            <Input
-                                {...field}
-                                id="username"
-                                aria-invalid={fieldState.invalid}
-                                placeholder="Enter username"
-                                autoComplete="off"
-                            />
-                            <FieldDescription>
-                                Unique name for account access.
-                            </FieldDescription>
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]} />
-                            )}
-                        </Field>
-                    )}
+                    label="Username"
+                    placeholder="Enter username"
+                    description="Unique name for account access."
                 />
 
-                {/* Role Select Field */}
-                <Controller
+                <FormSelect
+                    control={form.control}
                     name="role"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="role">Role</FieldLabel>
-                            <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                            >
-                                <SelectTrigger id="role" aria-invalid={fieldState.invalid}>
-                                    <SelectValue placeholder="Select a role" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                    <SelectItem value="manager">Manager</SelectItem>
-                                    <SelectItem value="user">User</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]} />
-                            )}
-                        </Field>
-                    )}
+                    label="Access Level"
+                    options={ROLE_OPTIONS}
                 />
 
-                {/* Password Field */}
-                <Controller
+                <FormPassword
+                    control={form.control}
                     name="password"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                        <Field data-invalid={fieldState.invalid}>
-                            <FieldLabel htmlFor="password">Password</FieldLabel>
-                            <Input
-                                {...field}
-                                id="password"
-                                type="password"
-                                aria-invalid={fieldState.invalid}
-                                placeholder="••••••"
-                            />
-                            <FieldDescription>
-                                {initialData ? "Leave blank to keep current" : "Minimum 6 characters"}
-                            </FieldDescription>
-                            {fieldState.invalid && (
-                                <FieldError errors={[fieldState.error]} />
-                            )}
-                        </Field>
-                    )}
+                    label="Password"
+                    description={initialData ? "Leave blank to keep current" : "Minimum 6 characters"}
                 />
-
-                {/* Form Actions */}
-                <Field orientation="horizontal" className="pt-4">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => form.reset()}
-                        disabled={loading}
-                    >
-                        Reset
-                    </Button>
-                    <Button type="submit" disabled={loading} className="flex-1">
-                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {initialData ? "Save Changes" : "Create User"}
-                    </Button>
-                </Field>
             </FieldGroup>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+                    Cancel
+                </Button>
+                <Button type="submit" disabled={loading} className="min-w-[100px]">
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {initialData ? "Update User" : "Create User"}
+                </Button>
+            </div>
         </form>
     )
 }

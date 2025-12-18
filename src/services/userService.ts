@@ -1,20 +1,21 @@
+// src/services/userService.ts
+import type { UserFilters, UserFormValues } from "@/schemas/userSchema"
 import api from "../api/apiClient"
-import type { UserFormValues, UserFilters, PaginatedResponse } from "@/schemas"
+import type { PaginatedResponse } from "@/schemas"
+import { normalize } from "@/lib/normalize" // Import the normalizer
 
 export const userService = {
-    // Uses the PaginatedResponse interface for the return type
     getUsers: async (params: UserFilters): Promise<PaginatedResponse<UserFormValues>> => {
         const res = await api.get<PaginatedResponse<UserFormValues>>("/users", { params })
-        return res.data
+        // GUARANTEE: even if res.data is null, this returns { items: [], totalCount: 0, ... }
+        return normalize.paginated<UserFormValues>(res.data)
     },
 
-    // Use UserFormValues directly instead of re-typing the object
     createUser: async (data: UserFormValues) => {
         const res = await api.post<UserFormValues>("/users", data)
         return res.data
     },
 
-    // Use Partial<UserFormValues> to allow updating only specific fields
     updateUser: async (id: number, data: Partial<UserFormValues>) => {
         const res = await api.put<UserFormValues>(`/users/${id}`, data)
         return res.data
@@ -27,6 +28,11 @@ export const userService = {
 
     getUserById: async (id: number): Promise<UserFormValues> => {
         const res = await api.get<UserFormValues>(`/users/${id}`)
-        return res.data
+        // GUARANTEE: If the user doesn't exist, it returns these safe defaults instead of null
+        return normalize.item<UserFormValues>(res.data, {
+            username: "",
+            role: "user",
+            password: ""
+        })
     },
 }

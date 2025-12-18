@@ -16,10 +16,10 @@ export default defineConfig({
     host: '0.0.0.0', // so it’s accessible from other machines
     proxy: {
       '/api': {
-        target: 'http://192.168.52.32:5037',
+        target: 'http://192.168.116.32:5037',
         changeOrigin: true,
         secure: false,
-        cookieDomainRewrite: "192.168.52.32"
+        cookieDomainRewrite: "192.168.116.32"
       }
     }
   }

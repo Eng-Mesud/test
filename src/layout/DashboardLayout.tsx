@@ -12,6 +12,8 @@ import {
     Activity,
     ChevronDown,
     Sparkles,
+    User,
+    Users2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
@@ -93,6 +95,33 @@ const navItems: NavSection[] = [
                 href: "/dashboard/locations",
                 description: "Manage locations",
                 gradient: "from-indigo-500 to-blue-500",
+                subItems: [
+                    {
+                        title: "Regions",
+                        icon: MapPin,
+                        href: "/dashboard/locations",
+                        description: "Manage regions",
+                    },
+                    {
+                        title: "Districts",
+                        icon: MapPin,
+                        href: "/dashboard/locations",
+                        description: "Manage districts",
+                    },
+                    {
+                        title: "Vote Centers",
+                        icon: MapPin,
+                        href: "/dashboard/locations",
+                        description: "Manage vote centers",
+                    },
+                ],
+            },
+            {
+                title: "Voters",
+                icon: Users2,
+                href: "/dashboard/voters",
+                description: "View and manage voters",
+                gradient: "from-teal-500 to-green-500",
             },
             {
                 title: "Reports",

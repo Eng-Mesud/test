@@ -56,7 +56,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        
+
         // --- STATE SYNC SOLUTION ---
         delete api.defaults.headers.common["Authorization"];
         if (typeof window !== "undefined") {
@@ -70,8 +70,12 @@ api.interceptors.response.use(
       }
     }
 
-    // 2. Handle FluentValidation Errors (Catch in components)
     if (error.response?.status === 400 && errorData?.errorCode === "VALIDATION_ERROR") {
+      const firstError = errorData.validationErrors
+        ? Object.values(errorData.validationErrors).flat()[0]
+        : errorData.message;
+
+      toast.error(firstError || "Validation failed");
       return Promise.reject(errorData);
     }
 
