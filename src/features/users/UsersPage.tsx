@@ -91,6 +91,7 @@ export default function UserPage() {
     const columns: ColumnDef<any>[] = [
         { accessorKey: "username", header: "Username" },
         { accessorKey: "role", header: "Role" },
+
         {
             id: "actions",
             header: () => <div className="text-right">Actions</div>,

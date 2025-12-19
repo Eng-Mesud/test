@@ -4,7 +4,7 @@
 import * as React from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { voterSchema, type VoterFormValues } from "@/schemas/voter"
+import { voterSchema, type VoterFormValues } from "@/schemas/voterSchema"
 import { voterService } from "@/services/voterService"
 import { FormInput } from "@/components/shared/form/form-input"
 import { FormSelect } from "@/components/shared/form/form-select"

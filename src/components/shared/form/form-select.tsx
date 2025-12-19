@@ -2,12 +2,12 @@
 
 import { type Control, Controller, type FieldValues, type Path } from "react-hook-form"
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
-import { 
-    Select, 
-    SelectContent, 
-    SelectItem, 
-    SelectTrigger, 
-    SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select"
 
 export interface SelectOption {
@@ -23,8 +23,8 @@ interface FormSelectProps<T extends FieldValues> {
   options: SelectOption[]
 }
 
-export function FormSelect<T extends FieldValues>({ 
-  control, name, label, placeholder = "Select an option", options 
+export function FormSelect<T extends FieldValues>({
+  control, name, label, placeholder = "Select an option", options
 }: FormSelectProps<T>) {
   return (
     <Controller
@@ -33,8 +33,8 @@ export function FormSelect<T extends FieldValues>({
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
           <FieldLabel>{label}</FieldLabel>
-          <Select 
-            value={field.value} 
+          <Select
+            value={field.value}
             onValueChange={field.onChange}
           >
             <SelectTrigger className="w-full flex justify-between items-center">

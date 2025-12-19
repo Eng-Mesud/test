@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 
 export default function VoterPage() {
     const navigate = useNavigate();
-    
+
     // 1. State Management
     const [data, setData] = React.useState([]);
     const [total, setTotal] = React.useState(0);
@@ -54,8 +54,8 @@ export default function VoterPage() {
 
     // 3. Table Column Definitions
     const columns: any[] = [
-        { 
-            accessorKey: "fullName", 
+        {
+            accessorKey: "fullName",
             header: "Full Name",
             cell: ({ row }: any) => (
                 <div className="flex flex-col">
@@ -64,8 +64,8 @@ export default function VoterPage() {
                 </div>
             )
         },
-        { 
-            accessorKey: "referenceNumber", 
+        {
+            accessorKey: "referenceNumber",
             header: "Ref #",
             cell: ({ row }: any) => (
                 <Badge variant="outline" className="font-mono text-xs">
@@ -85,22 +85,22 @@ export default function VoterPage() {
             header: () => <div className="text-right px-4">Actions</div>,
             cell: ({ row }: any) => (
                 <div className="flex gap-1 justify-end">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                         onClick={() => navigate(`/dashboard/voters/edit/${row.original.id}`)}
                         title="Edit Voter"
                     >
                         <Edit className="h-4 w-4" />
                     </Button>
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-destructive hover:bg-red-50"
-                        onClick={() => { 
-                            setVoterToDelete(row.original); 
-                            setIsDeleteDialogOpen(true); 
+                        onClick={() => {
+                            setVoterToDelete(row.original);
+                            setIsDeleteDialogOpen(true);
                         }}
                         title="Delete Voter"
                     >
@@ -132,8 +132,8 @@ export default function VoterPage() {
             description="Access and manage the centralized voter database."
             breadcrumb={[{ label: "Operations" }, { label: "Voters" }]}
             actions={
-                <Button 
-                    onClick={() => navigate("/dashboard/voters/new")} 
+                <Button
+                    onClick={() => navigate("/dashboard/voters/new")}
                     className="bg-blue-600 hover:bg-blue-700 shadow-sm"
                 >
                     <Plus className="mr-2 h-4 w-4" /> Register New Voter
@@ -141,25 +141,20 @@ export default function VoterPage() {
             }
         >
             <DataTable
-                title={
-                    <div className="flex items-center gap-2">
-                        <UserCheck className="h-5 w-5 text-blue-600" />
-                        <span>Registered Voters</span>
-                    </div>
-                }
+                title="Voters"
                 columns={columns}
                 data={data}
                 rowCount={total}
                 isLoading={loading}
                 toolbar={VoterToolbar}
-                pagination={{ 
-                    pageIndex: filters.page - 1, 
-                    pageSize: filters.pageSize 
+                pagination={{
+                    pageIndex: filters.page - 1,
+                    pageSize: filters.pageSize
                 }}
-                onPaginationChange={(p) => setFilters(f => ({ 
-                    ...f, 
-                    page: p.pageIndex + 1, 
-                    pageSize: p.pageSize 
+                onPaginationChange={(p) => setFilters(f => ({
+                    ...f,
+                    page: p.pageIndex + 1,
+                    pageSize: p.pageSize
                 }))}
             />
 
